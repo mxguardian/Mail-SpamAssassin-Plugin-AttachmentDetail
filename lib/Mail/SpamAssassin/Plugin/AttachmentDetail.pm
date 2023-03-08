@@ -86,6 +86,8 @@ use v5.12;
 use Mail::SpamAssassin::Plugin;
 use Mail::SpamAssassin::Logger;
 use Mail::SpamAssassin::Util qw(compile_regexp);
+use Email::MIME::ContentType;
+use Encode;
 
 our @ISA = qw(Mail::SpamAssassin::Plugin);
 
@@ -166,28 +168,53 @@ sub set_config {
 
 sub parsed_metadata {
     my ($self, $opts) = @_;
+    #@type Mail::SpamAssassin::PerMsgStatus
     my $pms = $opts->{permsgstatus};
-    my $msg = $opts->{msg};
+    #@type Mail::SpamAssassin::Message
+    my $msg = $pms->{msg};
+    #@type Mail::SpamAssassin::Message::Node
+    my $p;
+
+    local $Email::MIME::ContentType::STRICT_PARAMS = 0;
 
     # gather info on attachments
-    foreach my $p ($pms->{msg}->find_parts(qr/./, 1)) {
-        my ($type, $boundary, $charset, $name) =
-            Mail::SpamAssassin::Util::parse_content_type($p->get_header('content-type'));
-        next unless defined($name);
+    foreach $p ($msg->find_parts(qr/./, 1)) {
 
-        my $cte = $p->get_header('content-transfer-encoding') || '';
-        chomp $cte;
+        my $cd = $p->get_header('content-disposition');
+        next unless defined($cd);
 
-        my $cd = $p->get_header('content-disposition') || '';
-        chomp $cd;
-        $cd = $1 if $cd =~ /^(\S+)(?:;|$)/;
+        eval {
+            $cd = parse_content_disposition($cd);
+            for my $key (keys %{$cd->{attributes}}) {
+                $cd->{attributes}{$key} = encode_utf8($cd->{attributes}{$key});
+            }
 
-        push @{$pms->{'attachments'}}, {
-            'type'        => $type,
-            'name'        => $name,
-            'encoding'    => $cte,
-            'charset'     => $charset,
-            'disposition' => $cd,
+            my $ct = $p->get_header('content-type');
+            die "Content-Type header missing\n" unless defined($ct);
+            $ct = parse_content_type($ct);
+            for my $key (keys %{$ct->{attributes}}) {
+                $ct->{attributes}{$key} = encode_utf8($ct->{attributes}{$key});
+            }
+
+            my $name = $cd->{attributes}->{filename} || $ct->{attributes}->{name};
+            if ( defined($name) ) {
+                my $cte = $p->get_header('content-transfer-encoding') || '';
+                chomp $cte;
+
+                push @{$pms->{'attachments'}}, {
+                    'type'        => $ct->{type}.'/'.$ct->{subtype},
+                    'name'        => $name,
+                    'encoding'    => $cte,
+                    'charset'     => $ct->{attributes}->{charset},
+                    'disposition' => $cd->{type},
+                };
+
+            }
+            1;
+        } or do {
+            my $err = $@;
+            chomp $err;
+            warn "attachment_detail: error parsing attachment: $err";
         };
 
     }

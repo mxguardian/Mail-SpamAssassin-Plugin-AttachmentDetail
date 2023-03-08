@@ -30,7 +30,7 @@ The format for defining a rule is as follows:
 
 Supported keys are:
 
-`name` is the suggested filename as specified in the Content-Type header
+`name` is the suggested filename as specified in the Content-Disposition header
 
 `type` is the attachment MIME type (e.g. image/png, application/pdf, etc.)
 
