@@ -27,6 +27,14 @@ disposition.
 This provides a simpler way to write rules based on filenames and MIME types without having to
 parse MIME headers yourself.
 
+This plugin also creates the following eval rule:
+
+ body RULENAME  eval:check_attachment_count(<min>, <max>)
+    min: minimum number of attachments
+    max: maximum number of attachments
+    
+    Returns true if the number of attachments is between min and max (inclusive).
+
 =head1 SYNOPSIS
 
   loadplugin    Mail::SpamAssassin::Plugin::AttachmentDetail
@@ -36,6 +44,10 @@ parse MIME headers yourself.
   attachment    TRAILING_DOT            name =~ /\.$/
   attachment    DOUBLE_EXTENSION        name =~ /\.[^.\/\s]{2,4}\.[^.\/\s]{2,4}$/i
   ...
+
+  body          __ATTACH_NONE             eval:check_attachment_count(0,0)
+  body          __ATTACH_SINGLE           eval:check_attachment_count(1,1)
+  body          __ATTACH_MULTI            eval:check_attachment_count(2,9999)
 
 =head1 RULE DEFINITIONS AND PRIVILEGED SETTINGS
 
@@ -106,6 +118,7 @@ sub new {
     bless ($self, $class);
 
     $self->register_eval_rule("check_attachment_detail");
+    $self->register_eval_rule("check_attachment_count");
 
     $self->set_config($mailsaobject->{conf});
 
@@ -182,6 +195,7 @@ sub parsed_metadata {
     local $Email::MIME::ContentType::STRICT_PARAMS = 0;
 
     # gather info on attachments
+    $pms->{'attachments'} = [];
     foreach $p ($msg->find_parts(qr/./, 1)) {
 
         my $cd = $p->get_header('content-disposition');
@@ -222,6 +236,7 @@ sub parsed_metadata {
         };
 
     }
+    dbg("attachment_detail: found %d attachments", scalar @{$pms->{'attachments'}});
 
 }
 
@@ -299,6 +314,13 @@ sub check_attachment_detail {
         return 0;
     }
     return 0;
+}
+
+sub check_attachment_count {
+    my ($self, $permsg, undef, $min, $max) = @_;
+    return 0 unless exists $permsg->{'attachments'};
+    my $count = scalar @{$permsg->{'attachments'}};
+    $count >= $min and $count <= $max;
 }
 
 1;
