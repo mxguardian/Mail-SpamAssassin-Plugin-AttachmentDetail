@@ -76,6 +76,10 @@ If more than one condition is specified on a single rule, then ALL conditions mu
 
 This plugin was modeled after the URIDetail plugin
 
+=head1 REQUIREMENTS
+
+Email::MIME::ContentType 1.022 or later
+
 =cut
 
 package Mail::SpamAssassin::Plugin::AttachmentDetail;
