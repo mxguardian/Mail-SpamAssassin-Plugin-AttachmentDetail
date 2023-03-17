@@ -12,15 +12,27 @@ disposition.
 This provides a simpler way to write rules based on filenames and MIME types without having to
 parse MIME headers yourself.
 
+This plugin also creates the following eval rule:
+
+    body RULENAME  eval:check_attachment_count(<min>, <max>)
+       min: minimum number of attachments
+       max: maximum number of attachments
+       
+       Returns true if the number of attachments is between min and max (inclusive).
+
 # SYNOPSIS
 
     loadplugin    Mail::SpamAssassin::Plugin::AttachmentDetail
 
-    attachment    INVALID_HTML_TYPE       name =~ /\.s?html?/i type != "text/html"
+    attachment    INVALID_HTML_TYPE       name =~ /\.s?html?/i type != text/html
     attachment    GEEKSQUAD_IMAGE_SPAM    name =~ /^geek/i type =~ /^image\//
     attachment    TRAILING_DOT            name =~ /\.$/
     attachment    DOUBLE_EXTENSION        name =~ /\.[^.\/\s]{2,4}\.[^.\/\s]{2,4}$/i
     ...
+
+    body          __ATTACH_NONE             eval:check_attachment_count(0,0)
+    body          __ATTACH_SINGLE           eval:check_attachment_count(1,1)
+    body          __ATTACH_MULTI            eval:check_attachment_count(2,9999)
 
 # RULE DEFINITIONS AND PRIVILEGED SETTINGS
 
@@ -30,7 +42,7 @@ The format for defining a rule is as follows:
 
 Supported keys are:
 
-`name` is the suggested filename as specified in the Content-Disposition header
+`name` is the suggested filename as specified in the Content-Type header
 
 `type` is the attachment MIME type (e.g. image/png, application/pdf, etc.)
 
@@ -60,3 +72,7 @@ If more than one condition is specified on a single rule, then ALL conditions mu
 # ACKNOWLEDGEMENTS
 
 This plugin was modeled after the URIDetail plugin
+
+# REQUIREMENTS
+
+Email::MIME::ContentType 1.022 or later
