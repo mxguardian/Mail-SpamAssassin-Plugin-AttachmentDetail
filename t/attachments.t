@@ -4,6 +4,7 @@ use warnings FATAL => 'all';
 use Test::More;
 use Mail::SpamAssassin;
 use Data::Dumper;
+use utf8;
 
 my $data_dir = 't/data';
 my $spamassassin = Mail::SpamAssassin->new(
@@ -32,7 +33,8 @@ my @files = (
                 'encoding' => 'base64',
                 'name' => 'FAX_20230301_01934829984🧾.htm',
                 'charset' => undef,
-                'type' => 'text/html'
+                'type' => 'text/html',
+                'effective_type' => 'text/html'
             }
         ]
     },
@@ -44,7 +46,8 @@ my @files = (
                 'encoding' => 'base64',
                 'name' => '.HTM',
                 'charset' => undef,
-                'type' => 'application/octet-stream'
+                'type' => 'application/octet-stream',
+                'effective_type' => 'text/html'
             }
         ]
     },
@@ -54,6 +57,7 @@ my @files = (
             {
                 'encoding' => 'base64',
                 'type' => 'application/octet-stream',
+                'effective_type' => 'text/html',
                 'name' => '☎®.html',
                 'charset' => 'utf-8',
                 'disposition' => 'attachment'
@@ -66,6 +70,7 @@ my @files = (
             {
                 'name' => 'NnijYdoJHtjWGtMca65VNFfM1xgTtDAGCWJsHyJ0lCai3VOAIl.png',
                 'type' => 'image/png',
+                'effective_type' => 'image/png',
                 'encoding' => 'base64',
                 'charset' => undef,
                 'disposition' => 'inline'
@@ -75,6 +80,7 @@ my @files = (
                 'encoding' => 'base64',
                 'name' => 'PayApp_EFTPay219877.HTM..',
                 'type' => 'application/octet-stream',
+                'effective_type' => 'application/octet-stream',
                 'charset' => undef
             }
         ]
@@ -85,6 +91,7 @@ my @files = (
             {
                 'name' => 'Funds_128135.one',
                 'type' => 'application/onenote',
+                'effective_type' => 'application/onenote',
                 'encoding' => 'base64',
                 'charset' => undef,
                 'disposition' => 'attachment'
@@ -104,6 +111,7 @@ foreach my $file (@files) {
     my $msg = $spamassassin->parse($fh);
     my $pms = $spamassassin->check($msg);
     close $fh;
+    delete $_->{part} for @{$pms->{attachments}};
     # print $pms->get_report();
     # print Dumper($pms->{attachments});
     is_deeply($pms->{attachments}, $file->{attachments}, $file->{name});

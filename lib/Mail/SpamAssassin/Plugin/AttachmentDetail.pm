@@ -99,11 +99,12 @@ use strict;
 use warnings FATAL => 'all';
 use v5.12;
 
+our $VERSION = 0.02;
+
 use Mail::SpamAssassin::Plugin;
 use Mail::SpamAssassin::Logger;
 use Mail::SpamAssassin::Util qw(compile_regexp);
 use Email::MIME::ContentType;
-use Encode;
 
 our @ISA = qw(Mail::SpamAssassin::Plugin);
 
@@ -119,6 +120,9 @@ sub new {
 
     $self->register_eval_rule("check_attachment_detail");
     $self->register_eval_rule("check_attachment_count");
+
+    # other plugins may rely on us, so we need to run first
+    $self->register_method_priority("parsed_metadata", -10);
 
     $self->set_config($mailsaobject->{conf});
 
@@ -203,28 +207,27 @@ sub parsed_metadata {
 
         eval {
             $cd = parse_content_disposition($cd);
-            for my $key (keys %{$cd->{attributes}}) {
-                $cd->{attributes}{$key} = encode_utf8($cd->{attributes}{$key});
-            }
 
             my $ct = $p->get_header('content-type');
             die "Content-Type header missing\n" unless defined($ct);
             $ct = parse_content_type($ct);
-            for my $key (keys %{$ct->{attributes}}) {
-                $ct->{attributes}{$key} = encode_utf8($ct->{attributes}{$key});
-            }
 
             my $name = $cd->{attributes}->{filename} || $ct->{attributes}->{name};
             if ( defined($name) ) {
                 my $cte = $p->get_header('content-transfer-encoding') || '';
                 chomp $cte;
 
+                my $type = $ct->{type}.'/'.$ct->{subtype};
+                my $effective_type = $name =~ /\.s?html?$/i ? 'text/html' : $type;
+
                 push @{$pms->{'attachments'}}, {
-                    'type'        => $ct->{type}.'/'.$ct->{subtype},
-                    'name'        => $name,
-                    'encoding'    => $cte,
-                    'charset'     => $ct->{attributes}->{charset},
-                    'disposition' => $cd->{type},
+                    'type'           => $type,
+                    'effective_type' => $effective_type,
+                    'name'           => $name,
+                    'encoding'       => $cte,
+                    'charset'        => $ct->{attributes}->{charset},
+                    'disposition'    => $cd->{type},
+                    'part'           => $p,
                 };
 
             }
