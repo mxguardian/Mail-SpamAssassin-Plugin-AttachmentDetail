@@ -98,6 +98,19 @@ my @files = (
             },
         ]
     },
+    {
+        name        => 'msg6.eml',
+        attachments => [
+            {
+                'name' => '',
+                'type' => 'text/html',
+                'effective_type' => 'text/html',
+                'encoding' => 'base64',
+                'charset' => undef,
+                'disposition' => 'attachment'
+            },
+        ]
+    },
 
 );
 

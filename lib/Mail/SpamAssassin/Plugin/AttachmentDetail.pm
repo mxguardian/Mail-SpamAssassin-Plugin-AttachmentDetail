@@ -99,7 +99,7 @@ use strict;
 use warnings FATAL => 'all';
 use v5.12;
 
-our $VERSION = 0.02;
+our $VERSION = 0.03;
 
 use Mail::SpamAssassin::Plugin;
 use Mail::SpamAssassin::Logger;
@@ -213,7 +213,8 @@ sub parsed_metadata {
             $ct = parse_content_type($ct);
 
             my $name = $cd->{attributes}->{filename} || $ct->{attributes}->{name};
-            if ( defined($name) ) {
+            if ( defined($name) || $cd->{type} eq 'attachment' ) {
+                $name ||= '';
                 my $cte = $p->get_header('content-transfer-encoding') || '';
                 chomp $cte;
 

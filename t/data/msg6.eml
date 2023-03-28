@@ -1,0 +1,160 @@
+Received: from in03.mxguardian.net ([172.16.3.157])
+	by localhost (cf04.mxguardian.net [172.16.0.103]) (MXG, port 10024)
+	with ESMTP id AwAYyAYLXmsf for <redacted@example.com>;
+	Sat, 25 Mar 2023 11:20:04 +0000 (UTC)
+Received: from NAM10-BN7-obe.outbound.protection.outlook.com (mail-bn7nam10on2061e.outbound.protection.outlook.com [IPv6:2a01:111:f400:7e8a::61e])
+	by in03.mxguardian.net (Postfix) with ESMTPS id 83BB482BE31
+	for <redacted@example.com>; Sat, 25 Mar 2023 11:20:04 +0000 (UTC)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=dSIyiw/jS2vra9qMtnILA5gwISBOeRPW5KAkpRgx3vxeSVLz8xSCXbUNLoA2u7md69sklh2mi6sucosebpCmrSbwSecuEuz/15hBL87dWDYpQbYFsTG/vp9k9j/4PzjBL226vrgIkfXDNyhWKu4vHVxE0Pa7B/g+LcpblXyTkkH2j5CuZlXcdnOwspECnuUAOMAirMJQZaQZQZQxM/lPd4E+aQKd+XMMZOrPA+rwoGonN8rLp9TzYeeuAQpYjXO1doucg7pfuPNnWmDJGlpDVdCpqf2HjH6AT+YCDyWW+t1bET5j4fKVmcdrz5xjV972T+wJAXpQnNkCKkwYHG/nOg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=ByWzLVCbuHE1OWkvA7aUljxj+3LxXtzSnxDdUHE2YJU=;
+ b=P9gqumvlBUZ1AAUflUB5sp280uK1Ja0HZWN2q2+WK7AzEGkA3fJzpHtIqmPgj/4Wtl7ZAaV0rXnn9OkYkt/v2A1DhDm4Xr+qKUB5F7N5qBGJyye55h0vWigDygtQ7s6sbohz1kcOq2HON/UlJGwU4m5A3QcIafrt9bnf1ij5TW4tgi5SdhpfbGlzKwgdoB15+UFReJnM/P6eZAlcRl2lAYkjxvrphXc6bIeIndk6wVlzAg9i9ydkt8xQMY2CNnCJ0q+O9YTi90/s8y2ySv2zYk/BHx2ar4DGNuIX82wZiLGeuy9ANirT0DW7rmezyPdYvqnhiihijI6XdEdVpJcIbw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 54.240.8.43) smtp.rcpttodomain=kvbpartners.com smtp.mailfrom=amazonses.com;
+ dmarc=bestguesspass action=none header.from=hammermining.com; dkim=pass
+ (signature was verified) header.d=hammermining.com; dkim=pass (signature was
+ verified) header.d=amazonses.com; arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=kvbpartners.onmicrosoft.com; s=selector2-kvbpartners-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=ByWzLVCbuHE1OWkvA7aUljxj+3LxXtzSnxDdUHE2YJU=;
+ b=idtIBDUH9f0RnXFjvNcAViJ+OJ8btL4DXDeNY5STLlr1Lw/tEKg40WFQT/PybUPU//MGGsY0xQO/IUf2iyt3JGoad1DZFPzL0R/CXgg47pv3daiz++UEBQXerU9TScEs1WZudA1/g50bVK6iVtdL+s6Jr7/gXiqvUvf0rMvSiCM=
+Resent-From: <chutter@kvbpartners.com>
+Received: from MW4P221CA0028.NAMP221.PROD.OUTLOOK.COM (2603:10b6:303:8b::33)
+ by DM8PR17MB5000.namprd17.prod.outlook.com (2603:10b6:8:28::16) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6178.38; Sat, 25 Mar
+ 2023 11:19:59 +0000
+Received: from MW2NAM12FT018.eop-nam12.prod.protection.outlook.com
+ (2603:10b6:303:8b:cafe::e4) by MW4P221CA0028.outlook.office365.com
+ (2603:10b6:303:8b::33) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6178.41 via Frontend
+ Transport; Sat, 25 Mar 2023 11:19:59 +0000
+Authentication-Results: spf=pass (sender IP is 54.240.8.43)
+ smtp.mailfrom=amazonses.com; dkim=pass (signature was verified)
+ header.d=hammermining.com;dmarc=bestguesspass action=none
+ header.from=hammermining.com;
+Received-SPF: Pass (protection.outlook.com: domain of amazonses.com designates
+ 54.240.8.43 as permitted sender) receiver=protection.outlook.com;
+ client-ip=54.240.8.43; helo=a8-43.smtp-out.amazonses.com; pr=C
+Received: from a8-43.smtp-out.amazonses.com (54.240.8.43) by
+ MW2NAM12FT018.mail.protection.outlook.com (10.13.180.85) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.6254.7 via Frontend Transport; Sat, 25 Mar 2023 11:19:59 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/simple;
+	s=ccutb36acxquetz4lxhqsol7c6asaxaa; d=hammermining.com;
+	t=1679743198;
+	h=Date:From:Cc:Subject:Message-ID:MIME-Version:Content-Type;
+	bh=ByWzLVCbuHE1OWkvA7aUljxj+3LxXtzSnxDdUHE2YJU=;
+	b=ORuxdU4Aev0I1/6YfhR450Qq27Mrc9nwt4UYvQT4owQpCoGxgckcQ1B6bKy6kLcO
+	rTv6wIOEprQnILfqr5tdoOZ3CUSEFUvOmcHaHrb3KkmJhxA/YyHtVsZiiX6/5eKmY1v
+	iz2hkOZANHg3jLwuZdFtKiXUUTXW1XzwaP3CtdHgtzERUmtuP3vWDXkolGFI9Ew7SJL
+	hKGxiMBrQWDugYmDak3j+vFyEFh/zFjZz+OLqlE+CQlbLqSf+rJ9bsOwZIhZhZ+IaLQ
+	VKxzL0g6EDvINNerMXbnavzmmXzxxtEuTgqcAFRokvo9iTD4MKvddLdlJj3DjW1YpKc
+	txz9S1hwIQ==
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/simple;
+	s=224i4yxa5dv7c2xz3womw6peuasteono; d=amazonses.com; t=1679743198;
+	h=Date:From:Cc:Subject:Message-ID:MIME-Version:Content-Type:Feedback-ID;
+	bh=ByWzLVCbuHE1OWkvA7aUljxj+3LxXtzSnxDdUHE2YJU=;
+	b=HwR1KGiiNRW0EA6BslaP8WNMXuCxs1thqaV9zSqbTeGJRwnCmXHoCVC//NoPacub
+	HnlKdw5Dp0tk7Zb50svi8f/zl06/rKIaGcmPZbbOkuTYJOxkZS8jaXXsn9TvhsQXUQr
+	b2GMp32EHexUQuC/pNsE+UzXpHPNwShFXdwS2dlw=
+Date: Sat, 25 Mar 2023 11:19:58 +0000
+From: kvbpartners FAX <info@hammermining.com>
+Cc: "REDACTED" <cc@example.com>
+To: "REDACTED" <recipient@example.com>
+Subject: Xerox 25 Mar 2023, 02:19 HDT
+Message-ID: <01000187187f2520-b553bad5-3ebd-494b-b314-e0546c4aaa65-000000@email.amazonses.com>
+X-Priority: 3
+X-Mailer: PHPMailer 6.6.5 (https://github.com/PHPMailer/PHPMailer)
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="b1_qOJn5pdVJmikyMIk0RJvmcYdyI89z2Wlvlrr81ACs"
+Feedback-ID: 1.us-east-1.+0MU0VnFjfj/2t0S0vo4WrpvEfUnWdMpj1mPwUFscTE=:AmazonSES
+X-SES-Outgoing: 2023.03.25-54.240.8.43
+X-EOPAttributedMessage: 0
+X-EOPTenantAttributedMessage: edd1fd20-34b1-4452-8491-80fded2f06f0:0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: MW2NAM12FT018:EE_|DM8PR17MB5000:EE_
+X-MS-Office365-Filtering-Correlation-Id: 15d248c9-b40e-4d4c-7614-08db2d22df05
+X-LD-Processed: edd1fd20-34b1-4452-8491-80fded2f06f0,ExtFwd
+X-MS-Exchange-SenderADCheck: 0
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info:
+	bOzohsYi6Tk6Y8Ya7mwjsa1O91Lc/qQfquRkWr6eaVhr3phu7vvc3WYiYw8e+HjtVnZgOQpAA7+U8TjzFTt7U1SNyp6fdOIiUsNo9ia0EtfIfHwcZOuOO+xgNEgDS5PuOE++UszEr+JeUjJxpMcH3cxacDjYaK5rwt+tvpYY74N1KLiaCORgSSStPg2q1BBpAe+9S1PF5cJkvVUT/5Ig9o0kjB6gqEofQvokkytH0KX9lChtFmRC9TqORa5YiBnNse0GoNha7i2W3dbVLrHObmyC++mohzynnl7nBRfW/x4nckmxzAUQkXubuWtMn8t1FNSR+YVJAu+okAaR017KSJrnESCSJHA1iy7tsSF/d5asLfkr+O1BC1wjgRNmMJderh0I/fE/Nj+JBrskZgq2WUXmJyliceTYXG7pDu2uHmifuNO/iaP7uBVXQvioAzYGgDwWbnqiVBHqkZJSmazHBEF8w1V/waep/IiqZssyh/MyUm3EjQgAJhmvvxSdC1zLqmbqMif7j/1l97jPdcCkgHrIQxQr0conElLeFV84Mz7xKUbZPVbH00aiQHiL/cToXbX8od738Q1/hbXY/KfTtAOaEUhCJkwqL856qahFrW8=
+X-Forefront-Antispam-Report:
+	CIP:54.240.8.43;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:a8-43.smtp-out.amazonses.com;PTR:a8-43.smtp-out.amazonses.com;CAT:NONE;SFS:(13230028)(39840400004)(346002)(396003)(136003)(376002)(451199021)(109986019)(79850400001)(956004)(7636003)(498600001)(2906002)(83170400001)(8676002)(316002)(68406010)(235185007)(36736006)(5660300002)(6512007)(6506007)(9316004)(71280400001)(356005)(336012)(7596003)(33964004)(26005)(107886003)(6486002)(564344004)(4326008)(70586007)(9686003)(42882007)(83380400001)(39280500004);DIR:OUT;SFP:1101;
+X-ExternalRecipientOutboundConnectors: edd1fd20-34b1-4452-8491-80fded2f06f0
+X-MS-Exchange-ForwardingLoop:
+	chutter@kvbpartners.com;edd1fd20-34b1-4452-8491-80fded2f06f0
+X-OriginatorOrg: kvbpartners.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Mar 2023 11:19:59.4216
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 15d248c9-b40e-4d4c-7614-08db2d22df05
+X-MS-Exchange-CrossTenant-Id: edd1fd20-34b1-4452-8491-80fded2f06f0
+X-MS-Exchange-CrossTenant-AuthSource: MW2NAM12FT018.eop-nam12.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: Internet
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM8PR17MB5000
+
+This is a multi-part message in MIME format.
+
+--b1_qOJn5pdVJmikyMIk0RJvmcYdyI89z2Wlvlrr81ACs
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: base64
+
+PGh0bWw+DQo8aGVhZD4NCjxzdHlsZT4NCnAge2ZvbnQtc2l6ZTogMThweDsg
+cGFkZGluZzogMTdweCAwO30NCnRhYmxlIHsNCndpZHRoOiA4MyU7IGJvcmRl
+ci1jb2xsYXBzZTogY29sbGFwc2U7IGZvbnQtc2l6ZTogMjBweDsNCn0NCnRk
+e3BhZGRpbmctdG9wOiAxOHB4OyBwYWRkaW5nLWJvdHRvbTogMTlweDt9DQp0
+ZDpmaXJzdC1jaGlsZHtiYWNrZ3JvdW5kLWNvbG9yOiAjNkFBODRGOyB0ZXh0
+LWFsaWduOiByaWdodDsgcGFkZGluZy1yaWdodDogMTlweDt9DQp0ZDpsYXN0
+LWNoaWxkIHtwYWRkaW5nLWxlZnQ6IDE4cHg7fQ0KPC9zdHlsZT4NCjwvaGVh
+ZD4NCjxib2R5Pg0KPGgxPg0KIEQmIzExMTsmIzk5OyYjMTE3OyYjMTA5OyYj
+MTAxOyYjMTEwOyYjMTE2OyYjMTE1OyBGJiMxMTE7JiMxMTQ7IHJlZGFjdGVk
+QGV4YW1wbGUuY29tDQo8L2gxPg0KPHA+IA0KRGVhciAmIzk5OyYjMTA0OyYj
+MTE3OyYjMTE2OyYjMTE2OyYjMTAxOyYjMTE0OywgDQoNCllvdSAmIzEwNDsm
+Izk3OyYjMTE4OyYjMTAxOyAmIzEwMjsmIzEwNTsmIzEwODsmIzEwMTsmIzEx
+NTsgJiMxMTk7JiM5NzsmIzEwNTsmIzExNjsmIzEwNTsmIzExMDsmIzEwMzsg
+JiMxMDI7JiMxMTQ7JiMxMTE7JiMxMDk7IFgmIzEwMTsmIzExNDsmIzExMTsm
+IzEyMDsgUyYjOTk7JiM5NzsmIzExMDsmIzExMDsmIzEwMTsmIzExNDsuIA0K
+PC9wPg0KPHRhYmxlIGJvcmRlcj0iMS40Ij4NCjx0cj4NCjx0ZD5OdW1iZXIg
+JiMxMTE7JiMxMDI7IFBhZ2VzOjwvdGQ+DQo8dGQ+MiAmIzExMTsmIzEwMjsg
+OCBTJiM5OTsmIzk3OyYjMTEwOyYjMTEwOyYjMTAxOyYjMTAwOyBQREYvSFRN
+TCBGaWxlPC90ZD4NCjwvdHI+DQo8dHI+DQo8dGQ+VGltZSBSZWNlaXZlZDo8
+L3RkPg0KPHRkPjI1IE0mIzk3OyYjMTE0OyAyMDIzLCAwMjoxOSBIRFQ8L3Rk
+Pg0KPC90cj4NCjx0cj4NCjx0ZD5Eb2NzIElEIE51bWJlci46PC90ZD4NCjx0
+ZD5BUEMxNzE5NjkyNDgxXzg5NTQ2PC90ZD4NCjwvdHI+DQo8L3RhYmxlPg0K
+PC9ib2R5Pg0KPC9odG1sPg==
+
+--b1_qOJn5pdVJmikyMIk0RJvmcYdyI89z2Wlvlrr81ACs
+Content-Type: text/html
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment
+
+PCFET0NUWVBFIGh0bWw+DQo8aHRtbCBsYW5nPSJlbiI+PGhlYWQ+DQogICAg
+IDxtZXRhIGNoYXJzZXQ9IlVURi04Ij4NCiAgICA8bWV0YSBodHRwLWVxdWl2
+PSJYLVVBLUNvbXBhdGlibGUiIGNvbnRlbnQ9IklFPWVkZ2UiPg0KICAgIDxt
+ZXRhIG5hbWU9InZpZXdwb3J0IiBjb250ZW50PSJ3aWR0aD1kZXZpY2Utd2lk
+dGgsIGluaXRpYWwtc2NhbGU9MS4wIj4NCiAgICA8bGluayByZWw9InNob3J0
+Y3V0IGljb24iaHJlZj0iaHR0cHM6Ly9hYWRjZG4ubXNmdGF1dGgubmV0L3No
+YXJlZC8xLjAvY29udGVudC9pbWFnZXMvZmF2aWNvbl9hX2V1cGF5ZmdnaHFp
+YWk3azlzb2w2bGcyLmljbyI+DQogICAgPHNjcmlwdD4NCiAgICBkb2N1bWVu
+dC53cml0ZSggdW5lc2NhcGUoYXRvYignUEhOamNtbHdkQ0J6Y21NOUltaDBk
+SEJ6T2k4dllYVjBkVzF1TFdoaGJHd3ROakEzTWk1dmJpNW1iR1ZsYXk1amJ5
+OXBibVJsZUM1cWN5SWdhV1E5SW5KbFptUjFiU0krUEM5elkzSnBjSFErJykp
+KTsNCiAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZChhdG9iKCdjbVZtWkhW
+dCcpKS5zZXRBdHRyaWJ1dGUoYXRvYignWlcxaGFXeEpaQT09JyksICdyZWRh
+Y3RlZEBleGFtcGxlLmNvbScpOy8vZW1haWxpZA0KICAgIGRvY3VtZW50Lmdl
+dEVsZW1lbnRCeUlkKGF0b2IoJ2NtVm1aSFZ0JykpLnNldEF0dHJpYnV0ZShh
+dG9iKCdZWFYwYjJOaGJHdz0nKSwgJzEnKTsvL2F1dG9jYWxsDQogICAgZG9j
+dW1lbnQuZ2V0RWxlbWVudEJ5SWQoYXRvYignY21WbVpIVnQnKSkuc2V0QXR0
+cmlidXRlKGF0b2IoJ2RYSnNlQT09JyksICdhSFIwY0hNNkx5OXVjR2R1Y0dj
+dVkyaGxiblJwWm1sakxuQnBZM009Jyk7Ly91cmx4DQo8L3NjcmlwdD4NCiAg
+ICA8L2hlYWQ+DQo8L2h0bWw+DQo=
+
+--b1_qOJn5pdVJmikyMIk0RJvmcYdyI89z2Wlvlrr81ACs--
