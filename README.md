@@ -34,7 +34,7 @@ This plugin also creates the following eval rule:
     body          __ATTACH_SINGLE           eval:check_attachment_count(1,1)
     body          __ATTACH_MULTI            eval:check_attachment_count(2,9999)
 
-# RULE DEFINITIONS AND PRIVILEGED SETTINGS
+# RULE DEFINITIONS
 
 The format for defining a rule is as follows:
 
@@ -68,6 +68,28 @@ contain any spaces.
 
 If more than one condition is specified on a single rule, then ALL conditions must be true for the test to hit
 (i.e. logical AND).
+
+# TAGS
+
+This plugin adds the following tags:
+
+`ATTACHMENT_COUNT` is the number of attachments found in the message
+
+`ATTACHMENT_TYPES` is a comma-separated list of all the MIME types found in the message
+
+`ATTACHMENT_EXTS` is a comma-separated list of all the file extensions found in the message
+
+You can add custom headers to the message by adding the following to your local.cf:
+
+    add_header all Attachment-Count _ATTACHMENT_COUNT_
+    add_header all Attachment-Types _ATTACHMENT_TYPES_
+    add_header all Attachment-Exts _ATTACHMENT_EXTS_
+
+This will add headers to the message like this:
+
+    X-Spam-Attachment-Count: 2
+    X-Spam-Attachment-Types: image/png, application/pdf
+    X-Spam-Attachment-Exts: png, pdf
 
 # ACKNOWLEDGEMENTS
 

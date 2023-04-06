@@ -49,7 +49,7 @@ This plugin also creates the following eval rule:
   body          __ATTACH_SINGLE           eval:check_attachment_count(1,1)
   body          __ATTACH_MULTI            eval:check_attachment_count(2,9999)
 
-=head1 RULE DEFINITIONS AND PRIVILEGED SETTINGS
+=head1 RULE DEFINITIONS
 
 The format for defining a rule is as follows:
 
@@ -84,6 +84,28 @@ contain any spaces.
 If more than one condition is specified on a single rule, then ALL conditions must be true for the test to hit
 (i.e. logical AND).
 
+=head1 TAGS
+
+This plugin adds the following tags:
+
+C<ATTACHMENT_COUNT> is the number of attachments found in the message
+
+C<ATTACHMENT_TYPES> is a comma-separated list of all the MIME types found in the message
+
+C<ATTACHMENT_EXTS> is a comma-separated list of all the file extensions found in the message
+
+You can add custom headers to the message by adding the following to your local.cf:
+
+    add_header all Attachment-Count _ATTACHMENT_COUNT_
+    add_header all Attachment-Types _ATTACHMENT_TYPES_
+    add_header all Attachment-Exts _ATTACHMENT_EXTS_
+
+This will add headers to the message like this:
+
+    X-Spam-Attachment-Count: 2
+    X-Spam-Attachment-Types: image/png, application/pdf
+    X-Spam-Attachment-Exts: png, pdf
+
 =head1 ACKNOWLEDGEMENTS
 
 This plugin was modeled after the URIDetail plugin
@@ -99,7 +121,7 @@ use strict;
 use warnings FATAL => 'all';
 use v5.12;
 
-our $VERSION = 0.03;
+our $VERSION = 0.04;
 
 use Mail::SpamAssassin::Plugin;
 use Mail::SpamAssassin::Logger;
@@ -200,6 +222,7 @@ sub parsed_metadata {
 
     # gather info on attachments
     $pms->{'attachments'} = [];
+    my (%extensions, %types);
     foreach $p ($msg->find_parts(qr/./, 1)) {
 
         my $cd = $p->get_header('content-disposition');
@@ -231,6 +254,11 @@ sub parsed_metadata {
                     'part'           => $p,
                 };
 
+                if ($name =~ /\.(\w+)$/) {
+                    $extensions{lc($1)}++;
+                }
+                $types{$type}++;
+
             }
             1;
         } or do {
@@ -241,6 +269,10 @@ sub parsed_metadata {
 
     }
     dbg("attachment_detail: found %d attachments", scalar @{$pms->{'attachments'}});
+
+    $pms->set_tag('ATTACHMENT_COUNT', scalar @{$pms->{'attachments'}});
+    $pms->set_tag('ATTACHMENT_TYPES', join(',', keys %types));
+    $pms->set_tag('ATTACHMENT_EXTS', join(',', keys %extensions));
 
 }
 
