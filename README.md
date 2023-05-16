@@ -1,6 +1,6 @@
 # NAME
 
-AttachmentDetail - SpamAssassin plugin to check attachment details
+Mail::SpamAssassin::Plugin::AttachmentDetail - SpamAssassin plugin to check attachment details
 
 # DESCRIPTION
 
@@ -121,3 +121,18 @@ This plugin was modeled after the URIDetail plugin
 # REQUIREMENTS
 
 Email::MIME::ContentType 1.022 or later
+
+# AUTHORS
+
+Kent Oyer <kent@mxguardian.net>
+
+# COPYRIGHT AND LICENSE
+
+Copyright (C) 2023 MXGuardian LLC
+
+This is free software; you can redistribute it and/or modify it under
+the terms of the Apache License 2.0. See the LICENSE file included
+with this distribution for more information.
+
+This plugin is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
+implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

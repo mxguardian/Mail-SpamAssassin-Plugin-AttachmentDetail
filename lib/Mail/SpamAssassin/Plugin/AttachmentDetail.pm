@@ -11,11 +11,9 @@
 # limitations under the License.
 # </@LICENSE>
 
-# Author:  Kent Oyer <kent@mxguardian.net>
-
 =head1 NAME
 
-AttachmentDetail - SpamAssassin plugin to check attachment details
+Mail::SpamAssassin::Plugin::AttachmentDetail - SpamAssassin plugin to check attachment details
 
 =head1 DESCRIPTION
 
@@ -136,6 +134,21 @@ This plugin was modeled after the URIDetail plugin
 =head1 REQUIREMENTS
 
 Email::MIME::ContentType 1.022 or later
+
+=head1 AUTHORS
+
+Kent Oyer <kent@mxguardian.net>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2023 MXGuardian LLC
+
+This is free software; you can redistribute it and/or modify it under
+the terms of the Apache License 2.0. See the LICENSE file included
+with this distribution for more information.
+
+This plugin is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
+implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 =cut
 
