@@ -9,17 +9,6 @@ rules apply to all attachments found in the message. Any MIME part
 that has a filename is considered an "attachment" regardless of the content
 disposition.
 
-This provides a simpler way to write rules based on filenames and MIME types without having to
-parse MIME headers yourself.
-
-This plugin also creates the following eval rule:
-
-    body RULENAME  eval:check_attachment_count(<min>, <max>)
-       min: minimum number of attachments
-       max: maximum number of attachments
-       
-       Returns true if the number of attachments is between min and max (inclusive).
-
 # SYNOPSIS
 
     loadplugin    Mail::SpamAssassin::Plugin::AttachmentDetail
@@ -33,6 +22,40 @@ This plugin also creates the following eval rule:
     body          __ATTACH_NONE             eval:check_attachment_count(0,0)
     body          __ATTACH_SINGLE           eval:check_attachment_count(1,1)
     body          __ATTACH_MULTI            eval:check_attachment_count(2,9999)
+
+This plugin also creates the following eval rule:
+
+    body RULENAME  eval:check_attachment_count(<min>, <max>)
+       min: minimum number of attachments
+       max: maximum number of attachments
+
+       Returns true if the number of attachments is between min and max (inclusive).
+
+# FAQ
+
+Q: Can't I just use a `mimeheader` rule to check attachment details? For example, I already have this rule to
+look for HTML attachments with the wrong MIME type:
+
+    mimeheader  OBFU_HTML_ATTACH   Content-Type =~ m,\bapplication/octet-stream\b.+\.s?html?\b,i
+
+A: There's a few problems with this approach. First, the filename is not always included in the Content-Type header.
+It can be included in the Content-Disposition header instead. For example:
+
+    Content-Type: application/octet-stream;
+    Content-Disposition: attachment; filename="document.html"
+
+Second, the filename can be encoded and split across multiple lines using Parameter Value Continuation. For example:
+
+    Content-Type: application/octet-stream;
+        name*0*=UTF-8''%64%6F%63%75%6D%65%6E
+        name*1*=%74%2E%68%74%6D%6C
+
+As of SA version 4.0.0, the `mimeheader` rule does not properly decode Parameter Value Continuation. This plugin does.
+For more information on Parameter Value Continuation, see RFC 2231. [https://datatracker.ietf.org/doc/html/rfc2231](https://datatracker.ietf.org/doc/html/rfc2231)
+
+Third, it's easy to make mistakes when writing regular expressions. For example, the above rule will match
+any filename that contains the string ".html" such as "document.html.zip" which may or may not be
+what you want. This plugin simplifies the process of writing rules for attachments, leading to fewer mistakes.
 
 # RULE DEFINITIONS
 
