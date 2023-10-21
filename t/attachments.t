@@ -111,6 +111,34 @@ my @files = (
             },
         ]
     },
+    {
+        name        => 'msg7.eml',
+        attachments => [
+            {
+                'charset' => undef,
+                'encoding' => '',
+                'effective_type' => 'message/rfc822',
+                'name' => 'Sign&Return',
+                'disposition' => 'attachment',
+                'type' => 'message/rfc822'
+            },
+            {
+                'name' => 'IQEGXPVJY.JPG',
+                'encoding' => 'base64',
+                'effective_type' => 'image/jpeg',
+                'type' => 'image/jpeg',
+                'disposition' => 'inline',
+                'charset' => undef
+            },
+            {
+                'charset' => undef,
+                'effective_type' => 'image/png',
+                'encoding' => 'base64',
+                'name' => 'XCWHBPCFHL.png',
+                'disposition' => 'inline',
+                'type' => 'image/png'
+            }        ]
+    },
 
 );
 

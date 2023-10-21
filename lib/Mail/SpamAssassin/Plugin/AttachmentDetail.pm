@@ -157,7 +157,7 @@ use strict;
 use warnings FATAL => 'all';
 use v5.12;
 
-our $VERSION = 0.04;
+our $VERSION = 0.05;
 
 use Mail::SpamAssassin::Plugin;
 use Mail::SpamAssassin::Logger;
@@ -259,7 +259,7 @@ sub parsed_metadata {
     # gather info on attachments
     $pms->{'attachments'} = [];
     my (%extensions, %types);
-    foreach $p ($msg->find_parts(qr/./, 1)) {
+    foreach $p ($msg->find_parts(qr/./, 0)) {
 
         my $cd = $p->get_header('content-disposition');
         next unless defined($cd);
