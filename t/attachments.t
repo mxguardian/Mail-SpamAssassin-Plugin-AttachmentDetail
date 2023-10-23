@@ -34,7 +34,8 @@ my @files = (
                 'name' => 'FAX_20230301_01934829984🧾.htm',
                 'charset' => undef,
                 'type' => 'text/html',
-                'effective_type' => 'text/html'
+                'effective_type' => 'text/html',
+                'ext' => 'htm',
             }
         ]
     },
@@ -46,6 +47,7 @@ my @files = (
                 'encoding' => 'base64',
                 'name' => '.HTM',
                 'charset' => undef,
+                'ext' => 'htm',
                 'type' => 'application/octet-stream',
                 'effective_type' => 'text/html'
             }
@@ -58,6 +60,7 @@ my @files = (
                 'encoding' => 'base64',
                 'type' => 'application/octet-stream',
                 'effective_type' => 'text/html',
+                'ext' => 'html',
                 'name' => '☎®.html',
                 'charset' => 'utf-8',
                 'disposition' => 'attachment'
@@ -73,6 +76,7 @@ my @files = (
                 'effective_type' => 'image/png',
                 'encoding' => 'base64',
                 'charset' => undef,
+                'ext' => 'png',
                 'disposition' => 'inline'
             },
             {
@@ -81,6 +85,7 @@ my @files = (
                 'name' => 'PayApp_EFTPay219877.HTM..',
                 'type' => 'application/octet-stream',
                 'effective_type' => 'application/octet-stream',
+                'ext' => '',
                 'charset' => undef
             }
         ]
@@ -92,6 +97,7 @@ my @files = (
                 'name' => 'Funds_128135.one',
                 'type' => 'application/onenote',
                 'effective_type' => 'application/onenote',
+                'ext' => 'one',
                 'encoding' => 'base64',
                 'charset' => undef,
                 'disposition' => 'attachment'
@@ -105,6 +111,7 @@ my @files = (
                 'name' => '',
                 'type' => 'text/html',
                 'effective_type' => 'text/html',
+                'ext' => '',
                 'encoding' => 'base64',
                 'charset' => undef,
                 'disposition' => 'attachment'
@@ -117,27 +124,31 @@ my @files = (
             {
                 'charset' => undef,
                 'encoding' => '',
-                'effective_type' => 'message/rfc822',
+                'ext' => '',
                 'name' => 'Sign&Return',
                 'disposition' => 'attachment',
-                'type' => 'message/rfc822'
+                'type' => 'message/rfc822',
+                'effective_type' => 'message/rfc822'
             },
             {
                 'name' => 'IQEGXPVJY.JPG',
                 'encoding' => 'base64',
-                'effective_type' => 'image/jpeg',
+                'ext' => 'jpg',
                 'type' => 'image/jpeg',
+                'effective_type' => 'image/jpeg',
                 'disposition' => 'inline',
                 'charset' => undef
             },
             {
                 'charset' => undef,
-                'effective_type' => 'image/png',
+                'ext' => 'png',
                 'encoding' => 'base64',
                 'name' => 'XCWHBPCFHL.png',
                 'disposition' => 'inline',
-                'type' => 'image/png'
-            }        ]
+                'type' => 'image/png',
+                'effective_type' => 'image/png'
+            }
+        ]
     },
 
 );

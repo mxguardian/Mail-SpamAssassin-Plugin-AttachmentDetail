@@ -67,6 +67,8 @@ Supported keys are:
 
 `name` is the suggested filename as specified in the Content-Type header
 
+`ext` is the file extension (e.g. html, pdf, docx, etc.) as determined from the filename
+
 `type` is the attachment MIME type (e.g. image/png, application/pdf, etc.)
 
 `disposition` is the content disposition (e.g. attachment or inline)

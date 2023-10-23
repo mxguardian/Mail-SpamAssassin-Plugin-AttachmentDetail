@@ -80,6 +80,8 @@ Supported keys are:
 
 C<name> is the suggested filename as specified in the Content-Type header
 
+C<ext> is the file extension (e.g. html, pdf, docx, etc.) as determined from the filename
+
 C<type> is the attachment MIME type (e.g. image/png, application/pdf, etc.)
 
 C<disposition> is the content disposition (e.g. attachment or inline)
@@ -157,7 +159,7 @@ use strict;
 use warnings FATAL => 'all';
 use v5.12;
 
-our $VERSION = 0.05;
+our $VERSION = 0.06;
 
 use Mail::SpamAssassin::Plugin;
 use Mail::SpamAssassin::Logger;
@@ -209,7 +211,7 @@ sub set_config {
                 my $op = $2;
                 my $pattern = $3;
 
-                if ($target !~ /^(?:name|type|disposition|encoding|charset)$/) {
+                if ($target !~ /^(?:name|type|disposition|encoding|charset|ext)$/) {
                     return $Mail::SpamAssassin::Conf::INVALID_VALUE;
                 }
 
@@ -274,6 +276,7 @@ sub parsed_metadata {
             my $name = $cd->{attributes}->{filename} || $ct->{attributes}->{name};
             if ( defined($name) || $cd->{type} eq 'attachment' ) {
                 $name ||= '';
+                my $ext = $name =~ /\.(\w+)$/ ? lc($1) : '';
                 my $cte = $p->get_header('content-transfer-encoding') || '';
                 chomp $cte;
 
@@ -284,15 +287,14 @@ sub parsed_metadata {
                     'type'           => $type,
                     'effective_type' => $effective_type,
                     'name'           => $name,
+                    'ext'            => $ext,
                     'encoding'       => $cte,
                     'charset'        => $ct->{attributes}->{charset},
                     'disposition'    => $cd->{type},
                     'part'           => $p,
                 };
 
-                if ($name =~ /\.(\w+)$/) {
-                    $extensions{lc($1)}++;
-                }
+                $extensions{$ext}++ if $ext;
                 $types{$type}++;
 
             }
@@ -340,6 +342,18 @@ sub check_attachment_detail {
                 ($op eq '!~' && $attachment->{type} !~ $patt) ||
                 ($op eq '!=' && $attachment->{type} ne $patt) ) {
                 dbg("attachment_detail: type matched: '%s' %s '%s'", $attachment->{type},$op,$patt);
+            } else {
+                next;
+            }
+        }
+
+        if (exists $rule->{'ext'}) {
+            my($op,$patt) = @{$rule->{ext}};
+            if ( ($op eq '=~' && $attachment->{ext} =~ $patt) ||
+                ($op eq '==' && $attachment->{ext} eq $patt) ||
+                ($op eq '!~' && $attachment->{ext} !~ $patt) ||
+                ($op eq '!=' && $attachment->{ext} ne $patt) ) {
+                dbg("attachment_detail: extension matched: '%s' %s '%s'", $attachment->{ext},$op,$patt);
             } else {
                 next;
             }
