@@ -44,6 +44,9 @@ This plugin also creates the following eval rule:
 
     Returns true if the number of attachments is between min and max (inclusive).
 
+ body RULENAME  eval:check_attachment_mime_error()
+    Returns true if any attachments have MIME parsing errors.
+
 =head1 FAQ
 
 Q: Can't I just use a C<mimeheader> rule to check attachment details? For example, I already have this rule to
@@ -78,7 +81,11 @@ The format for defining a rule is as follows:
 
 Supported keys are:
 
-C<name> is the suggested filename as specified in the Content-Type header
+C<name> is the suggested filename for the attachment. This is determined from the filename parameter in the
+Content-Disposition header or the name parameter in the Content-Type header. If both are present, then the
+Content-Disposition header takes precedence. If neither is present, then the filename is empty.
+Contrary to other SpamAssassin rules, the filename is NOT encoded in UTF-8. You will be dealing
+with Perl characters. Write your regexes accordingly.
 
 C<ext> is the file extension (e.g. html, pdf, docx, etc.) as determined from the filename
 
@@ -88,7 +95,8 @@ C<disposition> is the content disposition (e.g. attachment or inline)
 
 C<encoding> is the content transfer encoding (e.g. 7bit, base64, quoted-printable, etc.)
 
-C<charset> is the character set (e.g. us-ascii, UTF-8, Windows-1251, ISO-8859-1, etc.)
+C<charset> is the character encoding (e.g. us-ascii, UTF-8, Windows-1251, ISO-8859-1, etc.)
+of the attachment body. (Note: NOT the character encoding of the filename)
 
 Supported operators are:
 
@@ -159,7 +167,7 @@ use strict;
 use warnings FATAL => 'all';
 use v5.12;
 
-our $VERSION = 0.06;
+our $VERSION = 0.50;
 
 use Mail::SpamAssassin::Plugin;
 use Mail::SpamAssassin::Logger;
@@ -180,6 +188,7 @@ sub new {
 
     $self->register_eval_rule("check_attachment_detail");
     $self->register_eval_rule("check_attachment_count");
+    $self->register_eval_rule("check_attachment_mime_error");
 
     # other plugins may rely on us, so we need to run first
     $self->register_method_priority("parsed_metadata", -10);
@@ -262,48 +271,76 @@ sub parsed_metadata {
     $pms->{'attachments'} = [];
     my (%extensions, %types);
     foreach $p ($msg->find_parts(qr/./, 0)) {
+        my ($name,$ext,$encoding,$effective_type,$type,$charset,$disposition);
+        my $mime_errors = 0;
 
+        # Parse Content-Disposition header
         my $cd = $p->get_header('content-disposition');
         next unless defined($cd);
-
         eval {
+            local $SIG{__WARN__} = sub { die $_[0] };
             $cd = parse_content_disposition($cd);
-
-            my $ct = $p->get_header('content-type');
-            die "Content-Type header missing\n" unless defined($ct);
-            $ct = parse_content_type($ct);
-
-            my $name = $cd->{attributes}->{filename} || $ct->{attributes}->{name};
-            if ( defined($name) || $cd->{type} eq 'attachment' ) {
-                $name ||= '';
-                my $ext = $name =~ /\.(\w+)$/ ? lc($1) : '';
-                my $cte = $p->get_header('content-transfer-encoding') || '';
-                chomp $cte;
-
-                my $type = $ct->{type}.'/'.$ct->{subtype};
-                my $effective_type = $name =~ /\.s?html?$/i ? 'text/html' : $type;
-
-                push @{$pms->{'attachments'}}, {
-                    'type'           => $type,
-                    'effective_type' => $effective_type,
-                    'name'           => $name,
-                    'ext'            => $ext,
-                    'encoding'       => $cte,
-                    'charset'        => $ct->{attributes}->{charset},
-                    'disposition'    => $cd->{type},
-                    'part'           => $p,
-                };
-
-                $extensions{$ext}++ if $ext;
-                $types{$type}++;
-
-            }
+            $name = $cd->{attributes}->{filename};
+            $disposition = $cd->{type};
             1;
         } or do {
             my $err = $@;
-            chomp $err;
-            warn "attachment_detail: error parsing attachment: $err";
+            dbg("attachment_detail: $err");
+            $mime_errors++;
         };
+        $disposition //= '';
+
+        # Parse Content-Type header
+        my $ct = $p->get_header('content-type');
+        eval {
+            local $SIG{__WARN__} = sub { die $_[0] };
+            $ct = parse_content_type($ct);
+            $name //= $ct->{attributes}->{name};
+            $type = $ct->{type}.'/'.$ct->{subtype};
+            $charset = $ct->{attributes}->{charset};
+            1;
+        } or do {
+            my $err = $@;
+            dbg("attachment_detail: $err");
+            $mime_errors++;
+        };
+        next unless defined($name) || $disposition eq 'attachment';
+        $type //= '';
+        $charset //= '';
+        $name //= '';
+
+        # Parse Content-Transfer-Encoding header
+        $encoding = $p->get_header('content-transfer-encoding');
+        if ( defined($encoding) ) {
+            chomp $encoding;
+            unless ($encoding =~ /^(?:7bit|8bit|binary|quoted-printable|base64|x-.+)$/i) {
+                dbg("attachment_detail: invalid encoding: $encoding");
+                $mime_errors++;
+            }
+        } else {
+            $encoding = '';
+        }
+
+        # Determine file extension
+        $ext = $name =~ /\.(\w+)$/ ? lc($1) : '';
+
+        # Determine effective MIME type
+        $effective_type = $name =~ /\.s?html?$/i ? 'text/html' : $type;
+
+        push @{$pms->{'attachments'}}, {
+            'type'           => $type // '',
+            'effective_type' => $effective_type // '',
+            'name'           => $name,
+            'ext'            => $ext,
+            'encoding'       => $encoding,
+            'charset'        => $charset // '',
+            'disposition'    => $disposition // '',
+            'mime_errors'    => $mime_errors,
+            'part'           => $p,
+        };
+
+        $extensions{$ext}++ if $ext;
+        $types{$type}++ if $type;
 
     }
     dbg("attachment_detail: found %d attachments", scalar @{$pms->{'attachments'}});
@@ -407,6 +444,12 @@ sub check_attachment_count {
     return 0 unless exists $permsg->{'attachments'};
     my $count = scalar @{$permsg->{'attachments'}};
     $count >= $min and $count <= $max;
+}
+
+sub check_attachment_mime_error {
+    my ($self, $permsg) = @_;
+    return 0 unless exists $permsg->{'attachments'};
+    return grep { $_->{mime_errors} } @{$permsg->{'attachments'}};
 }
 
 1;

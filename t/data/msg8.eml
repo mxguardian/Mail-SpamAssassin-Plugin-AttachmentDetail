@@ -1,0 +1,25 @@
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.510 (Entity 5.510)
+From: postmaster@mxguardian.net
+To: kent@mxguardian.net
+Date: Wed, 27 Mar 2024 18:07:14 +0000
+Message-ID: <smtptestmsg-1711562834@out01.mxguardian.net>
+Subject: Test message
+Content-Type: multipart/mixed; boundary="----------=_1711562834-87931-0"
+
+This is a multi-part message in MIME format...
+
+------------=_1711562834-87931-0
+Content-Type: text/plain
+Content-Disposition: inline
+Content-Transfer-Encoding: binary
+
+This is a test message. Please ignore
+
+------------=_1711562834-87931-0
+Content-Type: text; name="attachment.txt"
+Content-Disposition: attachment; filename="attachment.txt"
+Content-Transfer-Encoding: binary
+
+This is a text attachment
+------------=_1711562834-87931-0--

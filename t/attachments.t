@@ -19,6 +19,7 @@ my $spamassassin = Mail::SpamAssassin->new(
         debug              => 0,
         pre_config_text        => <<'EOF'
             loadplugin Mail::SpamAssassin::Plugin::AttachmentDetail
+            body ATTACHMENT_INVALID eval:check_attachment_mime_error()
 EOF
             ,
     }
@@ -32,10 +33,12 @@ my @files = (
                 'disposition' => 'attachment',
                 'encoding' => 'base64',
                 'name' => 'FAX_20230301_01934829984🧾.htm',
-                'charset' => undef,
+                'charset' => '',
                 'type' => 'text/html',
                 'effective_type' => 'text/html',
                 'ext' => 'htm',
+                'mime_errors'    => 0
+,
             }
         ]
     },
@@ -46,10 +49,12 @@ my @files = (
                 'disposition' => 'attachment',
                 'encoding' => 'base64',
                 'name' => '.HTM',
-                'charset' => undef,
+                'charset' => '',
                 'ext' => 'htm',
                 'type' => 'application/octet-stream',
-                'effective_type' => 'text/html'
+                'effective_type' => 'text/html',
+                'mime_errors'    => 0
+,
             }
         ]
     },
@@ -63,7 +68,9 @@ my @files = (
                 'ext' => 'html',
                 'name' => '☎®.html',
                 'charset' => 'utf-8',
-                'disposition' => 'attachment'
+                'disposition' => 'attachment',
+                'mime_errors'    => 0
+,
             }
         ]
     },
@@ -75,9 +82,11 @@ my @files = (
                 'type' => 'image/png',
                 'effective_type' => 'image/png',
                 'encoding' => 'base64',
-                'charset' => undef,
+                'charset' => '',
                 'ext' => 'png',
-                'disposition' => 'inline'
+                'disposition' => 'inline',
+                'mime_errors'    => 0
+,
             },
             {
                 'disposition' => 'attachment',
@@ -86,7 +95,9 @@ my @files = (
                 'type' => 'application/octet-stream',
                 'effective_type' => 'application/octet-stream',
                 'ext' => '',
-                'charset' => undef
+                'charset' => '',
+                'mime_errors'    => 0
+,
             }
         ]
     },
@@ -99,8 +110,10 @@ my @files = (
                 'effective_type' => 'application/onenote',
                 'ext' => 'one',
                 'encoding' => 'base64',
-                'charset' => undef,
-                'disposition' => 'attachment'
+                'charset' => '',
+                'disposition' => 'attachment',
+                'mime_errors'    => 0
+,
             },
         ]
     },
@@ -113,8 +126,10 @@ my @files = (
                 'effective_type' => 'text/html',
                 'ext' => '',
                 'encoding' => 'base64',
-                'charset' => undef,
-                'disposition' => 'attachment'
+                'charset' => '',
+                'disposition' => 'attachment',
+                'mime_errors'    => 0
+,
             },
         ]
     },
@@ -122,13 +137,15 @@ my @files = (
         name        => 'msg7.eml',
         attachments => [
             {
-                'charset' => undef,
+                'charset' => '',
                 'encoding' => '',
                 'ext' => '',
                 'name' => 'Sign&Return',
                 'disposition' => 'attachment',
                 'type' => 'message/rfc822',
-                'effective_type' => 'message/rfc822'
+                'effective_type' => 'message/rfc822',
+                'mime_errors'    => 0
+,
             },
             {
                 'name' => 'IQEGXPVJY.JPG',
@@ -137,23 +154,45 @@ my @files = (
                 'type' => 'image/jpeg',
                 'effective_type' => 'image/jpeg',
                 'disposition' => 'inline',
-                'charset' => undef
+                'charset' => '',
+                'mime_errors'    => 0
+,
             },
             {
-                'charset' => undef,
+                'charset' => '',
                 'ext' => 'png',
                 'encoding' => 'base64',
                 'name' => 'XCWHBPCFHL.png',
                 'disposition' => 'inline',
                 'type' => 'image/png',
-                'effective_type' => 'image/png'
+                'effective_type' => 'image/png',
+                'mime_errors'    => 0
+,
             }
         ]
     },
+    {
+        name        => 'msg8.eml',
+        attachments => [
+            {
+                'type'           => '',
+                'effective_type' => '',
+                'name'           => 'attachment.txt',
+                'charset'        => '',
+                'encoding'       => 'binary',
+                'ext'            => 'txt',
+                'disposition'    => 'attachment',
+                'mime_errors'    => 1,
+            }
+        ],
+        'hits'      => {
+            'ATTACHMENT_INVALID' => 1
+        }
+    }
 
 );
 
-plan tests => scalar @files;
+plan tests => scalar @files * 2;
 
 # test each file
 foreach my $file (@files) {
@@ -167,5 +206,12 @@ foreach my $file (@files) {
     # print $pms->get_report();
     # print Dumper($pms->{attachments});
     is_deeply($pms->{attachments}, $file->{attachments}, $file->{name});
+
+    my $hits = $pms->get_names_of_tests_hit_with_scores_hash();
+    foreach my $test (keys %$hits) {
+        delete $hits->{$test} unless $test =~ /^ATTACHMENT_/;
+    }
+    is_deeply($hits, $file->{hits} // {}, $file->{name});
+
 }
 

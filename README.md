@@ -31,6 +31,9 @@ This plugin also creates the following eval rule:
 
        Returns true if the number of attachments is between min and max (inclusive).
 
+    body RULENAME  eval:check_attachment_mime_error()
+       Returns true if any attachments have MIME parsing errors.
+
 # FAQ
 
 Q: Can't I just use a `mimeheader` rule to check attachment details? For example, I already have this rule to
@@ -65,7 +68,11 @@ The format for defining a rule is as follows:
 
 Supported keys are:
 
-`name` is the suggested filename as specified in the Content-Type header
+`name` is the suggested filename for the attachment. This is determined from the filename parameter in the
+Content-Disposition header or the name parameter in the Content-Type header. If both are present, then the
+Content-Disposition header takes precedence. If neither is present, then the filename is empty.
+Contrary to other SpamAssassin rules, the filename is NOT encoded in UTF-8. You will be dealing
+with Perl characters. Write your regexes accordingly.
 
 `ext` is the file extension (e.g. html, pdf, docx, etc.) as determined from the filename
 
@@ -75,7 +82,8 @@ Supported keys are:
 
 `encoding` is the content transfer encoding (e.g. 7bit, base64, quoted-printable, etc.)
 
-`charset` is the character set (e.g. us-ascii, UTF-8, Windows-1251, ISO-8859-1, etc.)
+`charset` is the character encoding (e.g. us-ascii, UTF-8, Windows-1251, ISO-8859-1, etc.)
+of the attachment body. (Note: NOT the character encoding of the filename)
 
 Supported operators are:
 
