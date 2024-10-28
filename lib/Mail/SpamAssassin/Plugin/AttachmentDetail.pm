@@ -313,7 +313,7 @@ sub parsed_metadata {
         $encoding = $p->get_header('content-transfer-encoding');
         if ( defined($encoding) ) {
             chomp $encoding;
-            unless ($encoding =~ /^(?:7bit|8bit|binary|quoted-printable|base64|x-.+)$/i) {
+            unless ($encoding =~ /^(?:7bit|8bit|binary|quoted-printable|base64|uuencode|x-.+)$/i) {
                 dbg("attachment_detail: invalid encoding: $encoding");
                 $mime_errors++;
             }
