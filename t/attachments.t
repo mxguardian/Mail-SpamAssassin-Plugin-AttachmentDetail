@@ -188,7 +188,22 @@ my @files = (
         'hits'      => {
             'ATTACHMENT_INVALID' => 1
         }
-    }
+    },
+    {
+        name        => 'msg9.eml',
+        attachments => [
+            {
+                'type'           => 'application/octet-stream',
+                'effective_type' => 'text/html',
+                'name'           => 'Play_Transcript_47755916917.html',
+                'charset'        => '',
+                'encoding'       => 'base64',
+                'ext'            => 'html',
+                'disposition'    => '',
+                'mime_errors'    => 0,
+            }
+        ]
+    },
 
 );
 

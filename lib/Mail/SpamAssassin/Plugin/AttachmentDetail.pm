@@ -167,7 +167,7 @@ use strict;
 use warnings FATAL => 'all';
 use v5.12;
 
-our $VERSION = 0.50;
+our $VERSION = 0.51;
 
 use Mail::SpamAssassin::Plugin;
 use Mail::SpamAssassin::Logger;
@@ -276,38 +276,46 @@ sub parsed_metadata {
 
         # Parse Content-Disposition header
         my $cd = $p->get_header('content-disposition');
-        next unless defined($cd);
-        eval {
-            local $SIG{__WARN__} = sub { die $_[0] };
-            $cd = parse_content_disposition($cd);
-            $name = $cd->{attributes}->{filename};
-            $disposition = $cd->{type};
-            1;
-        } or do {
-            my $err = $@;
-            dbg("attachment_detail: $err");
-            $mime_errors++;
-        };
-        $disposition //= '';
+        if ( defined($cd) ) {
+            eval {
+                local $SIG{__WARN__} = sub {die $_[0]};
+                $cd = parse_content_disposition($cd);
+                $name = $cd->{attributes}->{filename};
+                $disposition = $cd->{type};
+                1;
+            } or do {
+                my $err = $@;
+                dbg("attachment_detail: $err");
+                $mime_errors++;
+            };
+        }
 
         # Parse Content-Type header
         my $ct = $p->get_header('content-type');
-        eval {
-            local $SIG{__WARN__} = sub { die $_[0] };
-            $ct = parse_content_type($ct);
-            $name //= $ct->{attributes}->{name};
-            $type = $ct->{type}.'/'.$ct->{subtype};
-            $charset = $ct->{attributes}->{charset};
-            1;
-        } or do {
-            my $err = $@;
-            dbg("attachment_detail: $err");
-            $mime_errors++;
-        };
-        next unless defined($name) || $disposition eq 'attachment';
+        if ( defined($ct) ) {
+            eval {
+                local $SIG{__WARN__} = sub { die $_[0] };
+                $ct = parse_content_type($ct);
+                $name //= $ct->{attributes}->{name};
+                $type = $ct->{type}.'/'.$ct->{subtype};
+                $charset = $ct->{attributes}->{charset};
+                1;
+            } or do {
+                my $err = $@;
+                dbg("attachment_detail: $err");
+                $mime_errors++;
+            };
+        }
+
+        # Make sure everything is defined
+        $disposition //= '';
         $type //= '';
         $charset //= '';
         $name //= '';
+
+        # Skip non-attachments
+        next unless $name || $disposition eq 'attachment';
+        dbg("attachment_detail: found attachment name=$name type=$type charset=$charset disposition=$disposition");
 
         # Parse Content-Transfer-Encoding header
         $encoding = $p->get_header('content-transfer-encoding');
@@ -328,13 +336,13 @@ sub parsed_metadata {
         $effective_type = $name =~ /\.s?html?$/i ? 'text/html' : $type;
 
         push @{$pms->{'attachments'}}, {
-            'type'           => $type // '',
-            'effective_type' => $effective_type // '',
+            'type'           => $type,
+            'effective_type' => $effective_type,
             'name'           => $name,
             'ext'            => $ext,
             'encoding'       => $encoding,
-            'charset'        => $charset // '',
-            'disposition'    => $disposition // '',
+            'charset'        => $charset,
+            'disposition'    => $disposition,
             'mime_errors'    => $mime_errors,
             'part'           => $p,
         };
