@@ -32,6 +32,10 @@ disposition.
   attachment    DOUBLE_EXTENSION        name =~ /\.[^.\/\s]{2,4}\.[^.\/\s]{2,4}$/i
   ...
 
+  attach_text  ATTACH_BITCOIN    /\b[13][a-km-zA-HJ-NP-Z1-9]{25,34}\b/
+  attach_text  ATTACH_PAYPAL     /paypal/i
+  ...
+
   body          __ATTACH_NONE             eval:check_attachment_count(0,0)
   body          __ATTACH_SINGLE           eval:check_attachment_count(1,1)
   body          __ATTACH_MULTI            eval:check_attachment_count(2,9999)
@@ -46,6 +50,13 @@ This plugin also creates the following eval rule:
 
  body RULENAME  eval:check_attachment_mime_error()
     Returns true if any attachments have MIME parsing errors.
+
+This plugin also creates a new rule test type, called "attach_text".
+These rules match a regular expression against the rendered text content
+of all attachments. This requires the ExtractText plugin to be installed
+and loaded before this plugin.
+
+  attach_text SYMBOLIC_TEST_NAME /pattern/modifiers
 
 =head1 FAQ
 
@@ -167,7 +178,7 @@ use strict;
 use warnings FATAL => 'all';
 use v5.12;
 
-our $VERSION = 0.51;
+our $VERSION = 0.52;
 
 use Mail::SpamAssassin::Plugin;
 use Mail::SpamAssassin::Logger;
@@ -250,6 +261,33 @@ sub set_config {
                 warn "config: attachment_detail failed to add invalid rule $name";
                 return $Mail::SpamAssassin::Conf::INVALID_VALUE;
             }
+        }
+    });
+
+    push (@cmds, {
+        setting => 'attach_text',
+        is_priv => 1,
+        type => $Mail::SpamAssassin::Conf::CONF_TYPE_STRING,
+        code => sub {
+            my ($self, $key, $value, $line) = @_;
+
+            if ($value !~ /^(\S+)\s+(.+)$/) {
+                return $Mail::SpamAssassin::Conf::INVALID_VALUE;
+            }
+            my $name = $1;
+            my $pattern = $2;
+
+            my ($re, $err) = compile_regexp($pattern, 1);
+            if (!$re) {
+                dbg("config: attach_text invalid regexp '$pattern': $err");
+                return $Mail::SpamAssassin::Conf::INVALID_VALUE;
+            }
+
+            $conf->{parser}->{conf}->{attach_text_rules}->{$name} = $re;
+
+            # just define the test so that scores and lint works
+            $self->{parser}->add_test($name, undef,
+                $Mail::SpamAssassin::Conf::TYPE_EMPTY_TESTS);
         }
     });
 
@@ -357,6 +395,19 @@ sub parsed_metadata {
     $pms->set_tag('ATTACHMENT_TYPES', join(',', keys %types));
     $pms->set_tag('ATTACHMENT_EXTS', join(',', keys %extensions));
 
+    # Extract rendered text from all attachments
+    $pms->{attachment_text} = [];
+    foreach my $attachment (@{$pms->{'attachments'}}) {
+        my $text = $attachment->{part}->rendered() || '';
+        for (split(/^/, $text)) {
+            chomp;
+            next if /^\s*$/;
+            push(@{$pms->{attachment_text}}, $_);
+        }
+    }
+
+    $self->_run_attach_text_rules($pms);
+
 }
 
 sub check_attachment_detail {
@@ -445,6 +496,30 @@ sub check_attachment_detail {
         return 0;
     }
     return 0;
+}
+
+sub _run_attach_text_rules {
+    my ($self, $pms) = @_;
+
+    my $rules = $pms->{conf}->{attach_text_rules};
+    return unless defined $rules;
+
+    my $text = $pms->{attachment_text};
+    return unless defined $text && @$text;
+
+    foreach my $name (keys %{$rules}) {
+        my $re = $rules->{$name};
+        foreach my $line (@$text) {
+            if ($line =~ /$re/p) {
+                my $match = defined ${^MATCH} ? ${^MATCH} : '<negative match>';
+                dbg("attach_text: ran rule $name ======> got hit \"$match\"");
+                my $score = $pms->{conf}->{scores}->{$name} // 1;
+                $pms->got_hit($name, 'ATTACH_TEXT:', 'ruletype' => 'body', 'score' => $score);
+                $pms->{pattern_hits}->{$name} = $match;
+                last;
+            }
+        }
+    }
 }
 
 sub check_attachment_count {

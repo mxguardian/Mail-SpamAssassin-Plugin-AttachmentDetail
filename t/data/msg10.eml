@@ -1,0 +1,27 @@
+MIME-Version: 1.0
+From: sender@example.com
+To: recipient@example.com
+Date: Mon, 31 Mar 2025 12:00:00 +0000
+Message-ID: <test-attach-text-10@example.com>
+Subject: Test attach_text rules
+Content-Type: multipart/mixed; boundary="----=_boundary_10"
+
+This is a multi-part message in MIME format...
+
+------=_boundary_10
+Content-Type: text/plain
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+
+This is the main body of the message.
+
+------=_boundary_10
+Content-Type: text/plain; name="invoice.txt"
+Content-Disposition: attachment; filename="invoice.txt"
+Content-Transfer-Encoding: 7bit
+
+Please send payment to the following Bitcoin address:
+1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa
+Total amount due: $500.00
+
+------=_boundary_10--
